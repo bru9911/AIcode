@@ -1,5 +1,5 @@
-/Exemplo de código Java - Reflexão de um ponto em relação a um eixo:
-/Este código vai simular a reflexão de um ponto 
+#Exemplo de código Java - Reflexão de um ponto em relação a um eixo:
+#Este código vai simular a reflexão de um ponto 
 (
 𝑥
 ,
