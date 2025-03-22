@@ -1,0 +1,133 @@
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+
+// Entidade base: Prato
+abstract class Prato {
+    protected String nome;
+    protected BigDecimal preco;
+
+    public Prato(String nome, BigDecimal preco) {
+        this.nome = nome;
+        this.preco = preco;
+    }
+
+    public BigDecimal getPreco() {
+        return preco;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s - R$ %.2f", nome, preco);
+    }
+}
+
+// Subclasses para diferentes tipos de pratos
+class PratoPrincipal extends Prato {
+    public PratoPrincipal(String nome, BigDecimal preco) {
+        super(nome, preco);
+    }
+}
+
+class Sobremesa extends Prato {
+    public Sobremesa(String nome, BigDecimal preco) {
+        super(nome, preco);
+    }
+}
+
+class Bebida extends Prato {
+    public Bebida(String nome, BigDecimal preco) {
+        super(nome, preco);
+    }
+}
+
+// Factory para criar pratos
+class PratoFactory {
+    public static Prato criarPrato(String tipo, String nome, BigDecimal preco) {
+        return switch (tipo.toLowerCase()) {
+            case "principal" -> new PratoPrincipal(nome, preco);
+            case "sobremesa" -> new Sobremesa(nome, preco);
+            case "bebida" -> new Bebida(nome, preco);
+            default -> throw new IllegalArgumentException("Tipo de prato desconhecido: " + tipo);
+        };
+    }
+}
+
+// Interface para estratégias de desconto
+interface DescontoStrategy {
+    BigDecimal aplicarDesconto(BigDecimal valor);
+}
+
+// Estratégias concretas de desconto
+class DescontoNatal implements DescontoStrategy {
+    @Override
+    public BigDecimal aplicarDesconto(BigDecimal valor) {
+        return valor.multiply(BigDecimal.valueOf(0.90)); // 10% de desconto
+    }
+}
+
+class SemDesconto implements DescontoStrategy {
+    @Override
+    public BigDecimal aplicarDesconto(BigDecimal valor) {
+        return valor; // Sem desconto
+    }
+}
+
+// Classe Pedido
+class Pedido {
+    private final List<Prato> itens;
+    private DescontoStrategy descontoStrategy;
+
+    public Pedido() {
+        this.itens = new ArrayList<>();
+        this.descontoStrategy = new SemDesconto();
+    }
+
+    public void adicionarItem(Prato prato) {
+        itens.add(prato);
+    }
+
+    public void definirDesconto(DescontoStrategy desconto) {
+        this.descontoStrategy = desconto;
+    }
+
+    public BigDecimal calcularTotal() {
+        BigDecimal total = itens.stream()
+                .map(Prato::getPreco)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return descontoStrategy.aplicarDesconto(total);
+    }
+
+    public void exibirPedido() {
+        System.out.println("📝 Pedido Atual:");
+        itens.forEach(System.out::println);
+        System.out.println("Total: R$ " + calcularTotal());
+    }
+}
+
+// Classe principal para execução
+public class RestauranteApp {
+    public static void main(String[] args) {
+        Pedido pedido = new Pedido();
+
+        // Criando pratos via Factory
+        Prato prato1 = PratoFactory.criarPrato("principal", "Filé Mignon", BigDecimal.valueOf(50.00));
+        Prato prato2 = PratoFactory.criarPrato("sobremesa", "Petit Gateau", BigDecimal.valueOf(25.00));
+        Prato prato3 = PratoFactory.criarPrato("bebida", "Suco de Laranja", BigDecimal.valueOf(10.00));
+
+        // Adicionando ao pedido
+        pedido.adicionarItem(prato1);
+        pedido.adicionarItem(prato2);
+        pedido.adicionarItem(prato3);
+
+        // Aplicando desconto de Natal
+        pedido.definirDesconto(new DescontoNatal());
+
+        // Exibir pedido
+        pedido.exibirPedido();
+    }
+}
